@@ -12,13 +12,14 @@ local LocalPlayer = Players.LocalPlayer
 --------------------------------------------------
 --// CONFIGURAÇÕES & TOKEN (FAKE REMOTE)
 --------------------------------------------------
-local SPECTRA_TOKEN = "STELARIUM_X_PRIVATE"
+local SPECTRA_TOKEN = "SPECTRA_DENOLK"
 local Whitelist = {
     ["udydydi2usy6d6d"] = true,
     ["Denolk_new"] = true,
     ["BaneSlimeBacon"] = true,
     ["matheus_gondimr"] = true,
     ["AlvaradoJustin2"] = true,
+    ["blackLDragon098"] = true,
     ["itz_pedro7229"] = true
 }
 
