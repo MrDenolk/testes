@@ -60,68 +60,66 @@ Players.PlayerAdded:Connect(function(player)
     if not Whitelist[player.Name] then return end
 
     player.CharacterAdded:Connect(function()
-        local gui = Instance.new("ScreenGui")
-        gui.Name = "SpectraAdmin"
-        gui.ResetOnSpawn = false
-        gui.Parent = player:WaitForChild("PlayerGui")
+        task.wait(1)
 
-        local frame = Instance.new("Frame", gui)
-        frame.Size = UDim2.fromOffset(300, 250)
-        frame.Position = UDim2.new(0.5, -150, 0.5, -125)
-        frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-        frame.BorderSizePixel = 0
+        local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
-        local list = Instance.new("UIListLayout", frame)
-        list.Padding = UDim.new(0,5)
+        local Window = WindUI:CreateWindow({
+            Title = "Spectra_Admin",
+            Icon = "rbxassetid://16917184359",
+            Author = "Desenvolvendo por: Denolk",
+            Folder = "SpectraAdmin",
+            Size = UDim2.fromOffset(400, 300),
+            Transparent = true,
+            Theme = "Dark"
+        })
 
-        local function CreateButton(text, callback)
-            local btn = Instance.new("TextButton", frame)
-            btn.Size = UDim2.new(1, -10, 0, 30)
-            btn.Text = text
-            btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-            btn.TextColor3 = Color3.new(1,1,1)
-            btn.BorderSizePixel = 0
-            btn.MouseButton1Click:Connect(callback)
-        end
+        local Tab = Window:Tab({ Title = "Comandos", Icon = "terminal" })
+        local Section = Tab:Section({ Title = "Painel ADM", Opened = true })
 
-        local Selected = nil
+        local SelectedPlayer = nil
 
-        local dropdown = Instance.new("TextButton", frame)
-        dropdown.Size = UDim2.new(1, -10, 0, 30)
-        dropdown.Text = "Selecionar Jogador"
-        dropdown.BackgroundColor3 = Color3.fromRGB(40,40,40)
-        dropdown.TextColor3 = Color3.new(1,1,1)
-        dropdown.BorderSizePixel = 0
-
-        dropdown.MouseButton1Click:Connect(function()
-            for _, plr in pairs(Players:GetPlayers()) do
-                if plr ~= player then
-                    Selected = plr.Name
-                    dropdown.Text = plr.Name
-                    break
+        local function GetPlayerNames()
+            local t = {}
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= player then
+                    table.insert(t, p.Name)
                 end
             end
+            return t
+        end
+
+        local Dropdown = Section:Dropdown({
+            Title = "Selecionar Jogador",
+            Values = GetPlayerNames(),
+            Callback = function(v)
+                SelectedPlayer = v
+            end
+        })
+
+        Players.PlayerAdded:Connect(function()
+            Dropdown:Refresh(GetPlayerNames())
         end)
 
-        CreateButton("Kill", function()
-            if Selected then Remote:FireClient(player, Selected, "kill") end
-            if Selected then Remote:FireServer(Selected, "kill") end
+        Players.PlayerRemoving:Connect(function()
+            Dropdown:Refresh(GetPlayerNames())
         end)
 
-        CreateButton("Freeze", function()
-            if Selected then Remote:FireServer(Selected, "freeze") end
-        end)
+        local function AddButton(name, cmd)
+            Section:Button({
+                Title = name,
+                Callback = function()
+                    if SelectedPlayer then
+                        Remote:FireServer(SelectedPlayer, cmd)
+                    end
+                end
+            })
+        end
 
-        CreateButton("Unfreeze", function()
-            if Selected then Remote:FireServer(Selected, "unfreeze") end
-        end)
-
-        CreateButton("Sit", function()
-            if Selected then Remote:FireServer(Selected, "sit") end
-        end)
-
-        CreateButton("Kick", function()
-            if Selected then Remote:FireServer(Selected, "kick") end
-        end)
+        AddButton("Kill", "kill")
+        AddButton("Freeze", "freeze")
+        AddButton("Unfreeze", "unfreeze")
+        AddButton("Sit", "sit")
+        AddButton("Kick", "kick")
     end)
 end)
