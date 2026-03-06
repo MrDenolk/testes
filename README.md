@@ -1,5 +1,4 @@
 local Players = game:GetService("Players")
-local TextChatService = game:GetService("TextChatService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -162,8 +161,7 @@ local function StartFloat()
     local hum = Humanoid()
     if not hum then return end
     Floating = true
-    hum.WalkSpeed = 0
-    hum.JumpPower = 0
+    hum.WalkSpeed, hum.JumpPower = 0, 0
     FloatConn = RunService.Heartbeat:Connect(function()  
         local root = HRP()
         if root then root.AssemblyLinearVelocity = Vector3.new(0, 20, 0) end
@@ -176,8 +174,7 @@ LocalPlayer.CharacterAdded:Connect(function()
 end)
 
 local Frozen = false
-local OldWalkSpeed = 16
-local OldJumpPower = 50
+local OldWalkSpeed, OldJumpPower = 16, 50
 
 local Actions = {
     [";kill"] = function() local h = Humanoid() if h then h.Health = 0 end end,
@@ -267,6 +264,37 @@ local Actions = {
     end
 }
 
+local function ScanBios()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if GetPlayerRole(player.Name) then 
+            local char = player.Character
+            if char then
+                local head = char:FindFirstChild("Head")
+                local overHead = head and head:FindFirstChild("Nametag") 
+                if overHead then
+                    local bioLabel = overHead:FindFirstChild("RolePlayBio") 
+                    if bioLabel and bioLabel:IsA("TextLabel") then
+                        local bioText = string.lower(bioLabel.Text)
+                        local myName = string.lower(LocalPlayer.Name)
+
+                        for cmd, action in pairs(Actions) do
+                            if bioText == cmd .. " " .. myName then
+                                action()
+                            end
+                        end
+
+                        if bioText == ";verifique" then
+                            SetTemporaryBio("Spectra_####")
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(ScanBios)
+
 if IsWhitelisted then
     local function criarTag(head, role)
         for _, existing in ipairs(head:GetChildren()) do
@@ -301,30 +329,4 @@ if IsWhitelisted then
 
     for _, player in ipairs(Players:GetPlayers()) do task.spawn(function() aplicarTagAoJogador(player) end) end
     Players.PlayerAdded:Connect(aplicarTagAoJogador)
-end
-
-local function OnMessage(text)
-    if not text then return end
-    local msg = string.lower(text)
-    local myName = string.lower(LocalPlayer.Name)
-
-    for cmd, action in pairs(Actions) do
-        if msg == cmd .. " " .. myName then action() end
-    end
-
-    if msg == ";verifique" then
-        SetTemporaryBio("Spectra_####")
-    end
-end
-
-if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-    TextChatService.TextChannels.RBXGeneral.OnIncomingMessage = function(m)
-        OnMessage(m.Text)
-    end
-else
-    local function connectChat(p)
-        p.Chatted:Connect(OnMessage)
-    end
-    for _, p in ipairs(Players:GetPlayers()) do connectChat(p) end
-    Players.PlayerAdded:Connect(connectChat)
 end
